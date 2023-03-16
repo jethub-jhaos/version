@@ -1,6 +1,6 @@
 {
   "channel": "dev",
-  "supervisor": "2023.03.dev1402",
+  "supervisor": "2023.03.1",
   "homeassistant": {
     "default": "2023.4.0.dev20230316",
     "qemux86": "2023.4.0.dev20230316",
@@ -51,7 +51,7 @@
   "observer": "2023.02.dev1001",
   "image": {
     "core": "ghcr.io/home-assistant/{machine}-homeassistant",
-    "supervisor": "ghcr.io/home-assistant/{arch}-hassio-supervisor",
+    "supervisor": "ghcr.io/jethubjhaos/{arch}-hassio-supervisor",
     "cli": "ghcr.io/home-assistant/{arch}-hassio-cli",
     "audio": "ghcr.io/home-assistant/{arch}-hassio-audio",
     "dns": "ghcr.io/home-assistant/{arch}-hassio-dns",
@@ -60,7 +60,7 @@
   },
   "images": {
     "core": "ghcr.io/home-assistant/{machine}-homeassistant",
-    "supervisor": "ghcr.io/home-assistant/{arch}-hassio-supervisor",
+    "supervisor": "ghcr.io/jethubjhaos/{arch}-hassio-supervisor",
     "cli": "ghcr.io/home-assistant/{arch}-hassio-cli",
     "audio": "ghcr.io/home-assistant/{arch}-hassio-audio",
     "dns": "ghcr.io/home-assistant/{arch}-hassio-dns",
