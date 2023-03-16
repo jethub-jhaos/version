@@ -1,0 +1,162 @@
+name: JH Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      files:
+        description: 'File(s) to run action against'
+        required: true
+  pull_request:
+    branches: ["master-jethub"]
+  push:
+    branches: ["master-jethub"]
+    paths:
+    - apparmor.txt
+    - '*.json'
+    - rpi-imager-haos.png
+    - homeassistant.pub
+
+env:
+  PYTHON_VERSION: "3.10"
+  COSIGN_VERSION: "v2.0.0"
+  SIGNED_FILES: "apparmor.txt beta.json dev.json stable.json"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Lint with JQ
+      uses: jethubjhaos/actions/helpers/jq@master-jethub
+
+  prepare:
+    name: Prepare
+    needs: ["lint"]
+    runs-on: ubuntu-latest
+    outputs:
+      files: ${{ steps.changed_files.outputs.files }}
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Get changed files for push
+      if: github.event_name == 'push'
+      id: changed_files_push
+      uses: jitterbit/get-changed-files@v1
+
+    - name: Get changed files
+      id: changed_files
+      run: |
+        if [[ ${{ github.event_name }} == "push" ]]; then
+          echo "files=${{ steps.changed_files_push.outputs.all }}" >> $GITHUB_OUTPUT
+        else
+          echo "files=${{ github.event.inputs.files }}" >> $GITHUB_OUTPUT
+        fi
+
+  signing:
+    name: Sign ${{ matrix.path }}
+    needs: ["prepare"]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - stable.json
+          - beta.json
+          - dev.json
+          - apparmor.txt
+    steps:
+      - name: Check
+        id: check
+        run: |
+          if [[ "${{ needs.prepare.outputs.files }}" =~ ${{ matrix.path }} ]]; then
+            echo "sign=yes" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout the repository
+        if: steps.check.outputs.sign == 'yes'
+        uses: actions/checkout@v3
+
+      - name: Install SSH key for storage
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSHKEY }}
+          known_hosts: ${{ secrets.SSHKNOWNHOSTS }}
+          if_key_exists: replace
+
+      - name: Login to GitHub Container Registry
+        if: steps.check.outputs.sign == 'yes'
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: jethubjhaos
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: sigstore/cosign-installer@main
+        if: steps.check.outputs.sign == 'yes'
+        with:
+          cosign-release: ${{ env.COSIGN_VERSION }}
+
+      - name: Setup Python version ${{ env.PYTHON_VERSION }}
+        if: steps.check.outputs.sign == 'yes'
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Sign CAS
+        if: steps.check.outputs.sign == 'yes'
+        uses: jethubjhaos/actions/helpers/codenotary@master-jethub
+        with:
+          source: ${{ matrix.path }}
+          token: ${{ secrets.CAS_TOKEN }}
+
+      - name: Upload file
+        if: steps.check.outputs.sign == 'yes'
+        run: |
+          cosign upload blob -f ${{ matrix.path }} ghcr.io/jethubjhaos/version/${{ matrix.path }}
+
+      - name: Sign Cosign
+        if: steps.check.outputs.sign == 'yes'
+        run: |
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY --output-signature ${{ matrix.path }}.sig ghcr.io/jethubjhaos/version/${{ matrix.path }}
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_KEY }}
+
+      - name: Upload signature
+        if: steps.check.outputs.sign == 'yes'
+        run: |
+          rsync . repo@update.jethome.ru:/var/www/haversion.jethome.ru/ --exclude "*" --include "${{ matrix.path }}.sig"
+
+
+  upload:
+    name: Upload
+    needs: ["signing", "prepare"]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Install SSH key for storage
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSHKEY }}
+        known_hosts: ${{ secrets.SSHKNOWNHOSTS }}
+        if_key_exists: replace
+
+    - name: Setup Python version ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Upload files
+      run: |
+        for file in ${{ needs.prepare.outputs.files }}; do
+          if [[ "$file" =~ \.txt|\.json|\.png ]]; then
+            rsync . repo@update.jethome.ru:/var/www/haversion.jethome.ru/ --exclude "*" --include "$file"
+          fi
+        done
+
