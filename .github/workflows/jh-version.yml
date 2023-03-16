@@ -128,8 +128,8 @@ jobs:
       - name: Upload signature
         if: steps.check.outputs.sign == 'yes'
         run: |
-          ssh-keyscan update.jethome.ru >~/.ssh/known_hosts
-          rsync . repo@update.jethome.ru:/var/www/haversion.jethome.ru/ --exclude "*" --include "${{ matrix.path }}.sig"
+          ssh-keyscan update.jethome.ru >"${HOME}/.ssh/known_hosts"
+          rsync "${{ matrix.path }}.sig" repo@update.jethome.ru:/var/www/haversion.jethome.ru/
 
 
   upload:
@@ -157,8 +157,8 @@ jobs:
       run: |
         for file in ${{ needs.prepare.outputs.files }}; do
           if [[ "$file" =~ \.txt|\.json|\.png ]]; then
-            ssh-keyscan update.jethome.ru >~/.ssh/known_hosts
-            rsync . repo@update.jethome.ru:/var/www/haversion.jethome.ru/ --exclude "*" --include "$file"
+            ssh-keyscan update.jethome.ru >"${HOME}/.ssh/known_hosts"
+            rsync "$file" repo@update.jethome.ru:/var/www/haversion.jethome.ru/
           fi
         done
 
