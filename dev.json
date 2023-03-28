@@ -1,6 +1,6 @@
 {
   "channel": "dev",
-  "supervisor": "2023.03.dev1612",
+  "supervisor": "2023.03.dev2813",
   "homeassistant": {
     "default": "dev-jethub",
     "qemux86": "dev-jethub",
