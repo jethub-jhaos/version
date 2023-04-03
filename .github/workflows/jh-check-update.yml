@@ -1,0 +1,114 @@
+name: JH upstream modules version check
+
+on:
+  workflow_dispatch:
+    inputs:
+      files:
+        description: 'File(s) to run action against'
+        required: true
+  push:
+    branches: ["master"]
+    paths:
+    - apparmor.txt
+    - '*.json'
+    - rpi-imager-haos.png
+    - homeassistant.pub
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: [ self-hosted ]
+    if: ${{ github.repository_owner == 'jethubjhaos' }}
+    outputs:
+      files: ${{ steps.changed_files.outputs.files }}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Get changed files for push
+        if: github.event_name == 'push'
+        id: changed_files_push
+        uses: jitterbit/get-changed-files@v1
+
+      - name: Get changed files
+        id: changed_files
+        run: |
+          if [[ ${{ github.event_name }} == "push" ]]; then
+            echo "files=${{ steps.changed_files_push.outputs.all }}" >> $GITHUB_OUTPUT
+          else
+            #echo "files=${{ github.event.inputs.files }}" >> $GITHUB_OUTPUT
+            echo "files=beta.json dev.json stable.json" >> $GITHUB_OUTPUT
+          fi
+
+  updatever:
+    name: Prepare repository
+    needs: ["prepare"]
+    runs-on: [self-hosted]
+    if: ${{ github.repository_owner == 'jethubjhaos' }}
+    steps:
+      - name: Checkout jethub version repository (master)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: jethubjhaos/version
+          path: version
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: master-jethub
+
+      - name: Checkout jethub upstream version repository (master)
+        if: github.event_name != 'push'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          repository: jethubjhaos/version
+          path: version-upstream
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: master
+
+      - name: Checkout home-assistant version repository (master)
+        if: github.event_name != 'push'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          repository: home-assistant/version
+          path: version-upstream
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: master
+
+      - name: Compare
+        run: |
+          cd version
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name  "GitHub Actions"
+
+          for channel in stable beta dev; do
+            # check supervisor version
+            # check homeassistant version
+            # check hassos version
+            # hassos-upgrade
+            # ota, image, images - not modifyed
+
+            if [[ "${{ needs.prepare.outputs.files }}" =~ $channel.json ]]; then
+              echo "Update $channel.json with:"
+              cat ../version-upstream/$channel.json | jq '{cli,dns,audio,multicast,observer}' > ${channel}-up.json
+              cat ${channel}-up.json
+              jq '. + input' $channel.json ${channel}-up.json > ${channel}-new.json
+              rm -f $channel.json ${channel}-up.json
+              mv ${channel}-new.json $channel.json
+              git add $channel.json
+            fi
+          done;
+          git commit -m "Sync versions with upstream"
+          cd ..
+
+
+      - name: Push changes ${{ matrix.repo.branch }}
+        uses: ad-m/github-push-action@master
+        with:
+          directory: version
+          repository: jethubjhaos/version
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master-jethub
+          force_with_lease: false
