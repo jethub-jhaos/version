@@ -100,7 +100,7 @@ jobs:
               git add $channel.json
             fi
           done;
-          git commit -m "Sync versions with upstream"
+          git commit -m "Sync versions with upstream" || true
           cd ..
 
 
