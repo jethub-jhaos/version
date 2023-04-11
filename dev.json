@@ -43,14 +43,14 @@
     "intel-nuc": "10.0.dev20230316",
     "khadas-vim3": "10.0.dev20230316"
   },
-  "ota": "https://os-builds.home-assistant.io/{version}/{os_name}_{board}-{version}.raucb",
+  "ota": "https://os-builds.jhaos.dev/{version}/{os_name}_{board}-{version}.raucb",
   "cli": "2023.01.dev2301",
   "dns": "2022.04.dev2502",
   "audio": "2022.07.dev3002",
   "multicast": "2022.02.dev2303",
   "observer": "2023.03.dev2901",
   "image": {
-    "core": "ghcr.io/home-assistant/{machine}-homeassistant",
+    "core": "ghcr.io/jethubjhaos/{machine}-homeassistant",
     "supervisor": "ghcr.io/jethubjhaos/{arch}-hassio-supervisor",
     "cli": "ghcr.io/home-assistant/{arch}-hassio-cli",
     "audio": "ghcr.io/home-assistant/{arch}-hassio-audio",

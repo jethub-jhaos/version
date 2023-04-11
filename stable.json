@@ -50,14 +50,14 @@
     "4": "4.20",
     "3": "3.13"
   },
-  "ota": "https://github.com/home-assistant/operating-system/releases/download/{version}/{os_name}_{board}-{version}.raucb",
+  "ota": "https://github.com/jethubjhaos/operating-system/releases/download/{version}/{os_name}_{board}-{version}.raucb",
   "cli": "2022.11.0",
   "dns": "2022.04.1",
   "audio": "2022.07.0",
   "multicast": "2022.02.0",
   "observer": "2021.10.0",
   "image": {
-    "core": "homeassistant/{machine}-homeassistant",
+    "core": "jethubjhaos/{machine}-homeassistant",
     "supervisor": "jethubjhaos/{arch}-hassio-supervisor",
     "cli": "homeassistant/{arch}-hassio-cli",
     "audio": "homeassistant/{arch}-hassio-audio",
@@ -66,7 +66,7 @@
     "multicast": "homeassistant/{arch}-hassio-multicast"
   },
   "images": {
-    "core": "ghcr.io/home-assistant/{machine}-homeassistant",
+    "core": "ghcr.io/jethubjhaos/{machine}-homeassistant",
     "supervisor": "ghcr.io/jethubjhaos/{arch}-hassio-supervisor",
     "cli": "ghcr.io/home-assistant/{arch}-hassio-cli",
     "audio": "ghcr.io/home-assistant/{arch}-hassio-audio",
