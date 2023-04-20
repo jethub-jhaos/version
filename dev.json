@@ -7,6 +7,8 @@
     "qemux86-64": "2023.5.0.dev20230420",
     "qemuarm": "2023.5.0.dev20230420",
     "qemuarm-64": "2023.5.0.dev20230420",
+    "jethubj100": "2023.5.0.dev20230420",
+    "jethubj80": "2023.5.0.dev20230420",
     "generic-x86-64": "2023.5.0.dev20230420",
     "intel-nuc": "2023.5.0.dev20230420",
     "khadas-vim3": "2023.5.0.dev20230420",
@@ -41,6 +43,8 @@
     "generic-x86-64": "11.0.dev20230419",
     "generic-aarch64": "11.0.dev20230419",
     "intel-nuc": "11.0.dev20230419",
+    "jethub-j100": "11.0.dev20230419",
+    "jethub-j80": "11.0.dev20230419",
     "khadas-vim3": "11.0.dev20230419"
   },
   "ota": "https://os-builds.jhaos.dev/{version}/{os_name}_{board}-{version}.raucb",

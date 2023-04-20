@@ -4,6 +4,8 @@
   "homeassistant": {
     "default": "2023.4.1",
     "qemux86": "2023.4.1",
+    "jethubj100": "2023.4.1",
+    "jethubj80": "2023.4.1",
     "qemux86-64": "2023.4.1",
     "qemuarm": "2023.4.1",
     "qemuarm-64": "2023.4.1",
@@ -33,6 +35,8 @@
     "rpi4-64": "9.5",
     "yellow": "9.5",
     "tinker": "9.5",
+    "jethub-j100": "2023.4.1",
+    "jethub-j80": "2023.4.1",
     "odroid-c2": "9.5",
     "odroid-c4": "9.5",
     "odroid-m1": "10.0.dev20230310",
